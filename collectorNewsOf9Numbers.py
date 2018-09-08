@@ -19,13 +19,14 @@ values = {
 
 #https://search.naver.com/search.naver?sm=tab_hty.top&where=news&query=%229와숫자들%22&oquery=%229와숫자들%22&tqi=THKHAdpySEsssbsSh5lssssssvK-520476
 #https://search.naver.com/search.naver?sm=tab_hty.top&where=news&query=9와숫자들&oquery=%229와숫자들%22&tqi=THKHydpySE4ssauFdsRssssst7R-483663
-
+#https://search.naver.com/search.naver?sm=tab_hty.top&where=news&query=%229%EC%99%80%EC%88%AB%EC%9E%90%EB%93%A4%22&oquery=9%EC%99%80%EC%88%AB%EC%9E%90%EB%93%A4&tqi=THLPXspVuElssskxevwssssssNh-181482
 headers = {'User-Agent': 'Mozilla/5.0'}
 
 context = ssl._create_unverified_context()
 
 def get_html(url):
     _html = ""
+    print(url)
     resp = requests.get(url, headers=headers)
     #print(resp)
     if resp.status_code == 200:
@@ -52,23 +53,26 @@ def parse_html(html):
         #_news_src = news_info_area.find("span", {"class" : "_sp_each_source"}).get_text()
         _text_area = news_index.find_all("dd")
 
+        count = 0
         for _text in _text_area:
-            if _text.find("span", {"class": "_sp_each_source"}) == None:
-                _new_txt = _text.get_text()
-            else:
-                _news_src = _text.find("span", {"class": "_sp_each_source"}).get_text()
 
+            if count < 2 :
+                if _text.find("span", {"class": "_sp_each_source"}) == None:
+                    _news_txt = _text.get_text()
+
+                else:
+                    _news_src = _text.find("span", {"class": "_sp_each_source"}).get_text()
+                    _news_dt = news_info_area.get_text().split("  ")[1]
+            else:
+                break
+            count = count + 1
         info_soup = title_area.find("a")
 
         _url = info_soup["href"]
-        #_text = info_soup["title"]
         _title = info_soup["title"]
-        #print(_title)
 
-        # _num = _text[0]
-        # if len(_text) > 1:
-        #     _title = _text[1]
-        news_list.append((_title, _url, _news_src, _new_txt))
+        if "9와 숫자들" in _news_txt or "9와숫자들" in _news_txt :
+            news_list.append((_title, _url, _news_src, _news_txt, _news_dt))
     return news_list
 
 def do_main():
